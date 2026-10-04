@@ -12,8 +12,6 @@ OPTIONAL_FIELDS = (
     C.BM_DEVICE_STATUS,
 )
 
-LOGO_MAX_WIDTH = 4500
-LOGO_MAX_HEIGHT = 1800
 PROPERTY_REMOVABLE = 128
 
 
@@ -93,38 +91,6 @@ def write_paragraphs(rng, paragraphs):
             bold.CharWeight = BOLD
 
 
-def _fit_size(width, height):
-    if width <= 0 or height <= 0:
-        return LOGO_MAX_WIDTH, LOGO_MAX_HEIGHT
-    scale = min(float(LOGO_MAX_WIDTH) / width, float(LOGO_MAX_HEIGHT) / height)
-    return int(width * scale), int(height * scale)
-
-
-def replace_logo(ctx, doc, path):
-    if not path or not os.path.isfile(path):
-        return False
-    objects = doc.getGraphicObjects()
-    if not objects.hasByName(C.LOGO_OBJECT_NAME):
-        return False
-    provider = ctx.ServiceManager.createInstanceWithContext(
-        "com.sun.star.graphic.GraphicProvider", ctx)
-    graphic = provider.queryGraphic(props(URL=uno.systemPathToFileUrl(path)))
-    if graphic is None:
-        return False
-    logo = objects.getByName(C.LOGO_OBJECT_NAME)
-    logo.Graphic = graphic
-    size = graphic.Size100thMM
-    width, height = size.Width, size.Height
-    if width <= 0 or height <= 0:
-        pixels = graphic.SizePixel
-        width = int(pixels.Width * 2540 / 96.0)
-        height = int(pixels.Height * 2540 / 96.0)
-    new_size = logo.Size
-    new_size.Width, new_size.Height = _fit_size(width, height)
-    logo.Size = new_size
-    return True
-
-
 def set_user_property(doc, name, value):
     udp = doc.getDocumentProperties().getUserDefinedProperties()
     if udp.getPropertySetInfo().hasPropertyByName(name):
@@ -157,8 +123,6 @@ def fill_report(ctx, doc, model, settings):
             weight = BOLD if name == C.BM_REPORT_TITLE else NORMAL
             _set_bookmark_text(doc, name, value, weight)
 
-    _set_bookmark_text(doc, C.BM_SERVICE_NAME,
-                       (settings.get("service_name") or u"").strip(), BOLD)
     _set_bookmark_text(doc, C.BM_FOOTER_TICKET, model["ticket"])
 
     for key in C.TEXT_FIELDS:
@@ -187,12 +151,82 @@ def fill_report(ctx, doc, model, settings):
         else:
             delete_paragraph_at(mark.getAnchor())
 
-    replace_logo(ctx, doc, settings.get("logo_path"))
-
     doc.getDocumentProperties().Title = u"%s – %s" % (
         model["title"].capitalize(), model["ticket"])
     set_user_property(doc, C.DOCPROP_MARKER, u"1")
     set_user_property(doc, C.DOCPROP_TICKET, model["ticket"])
+
+
+def letterhead_path(settings):
+    path = (settings.get("letterhead_path") or u"").strip()
+    return path if path and os.path.isfile(path) else u""
+
+
+def _has_anchored_content(paragraph):
+    try:
+        return paragraph.createContentEnumeration(
+            "com.sun.star.text.TextContent").hasMoreElements()
+    except Exception:
+        return False
+
+
+def _paragraphs(text):
+    result = []
+    enum = text.createEnumeration()
+    while enum.hasMoreElements():
+        result.append(enum.nextElement())
+    return result
+
+
+def _remove_end_marker(doc):
+    mark = _bookmark(doc, C.BM_REPORT_END)
+    if mark is None:
+        return
+    anchor = mark.getAnchor()
+    cursor = anchor.getText().createTextCursorByRange(anchor)
+    cursor.gotoStartOfParagraph(False)
+    cursor.gotoEndOfParagraph(True)
+    if cursor.getString().strip():
+        return
+    for para in _paragraphs(doc.getText()):
+        if (para.supportsService("com.sun.star.text.Paragraph")
+                and doc.getText().compareRegionStarts(para.getStart(),
+                                                      cursor.getStart()) == 0):
+            if _has_anchored_content(para):
+                return
+            break
+    doc.getText().removeTextContent(mark)
+    delete_paragraph_at(cursor)
+
+
+def _collapse_paragraph(para):
+    spacing = uno.createUnoStruct("com.sun.star.style.LineSpacing")
+    spacing.Mode = 3
+    spacing.Height = 10
+    para.ParaTopMargin = 0
+    para.ParaBottomMargin = 0
+    para.ParaLineSpacing = spacing
+    para.CharHeight = 1.0
+
+
+def insert_report_body(doc, template_url):
+    text = doc.getText()
+    page_style = text.createTextCursorByRange(text.getStart()).PageStyleName
+    original = _paragraphs(text)
+    body_empty = all(p.supportsService("com.sun.star.text.Paragraph")
+                     and not p.getString().strip() for p in original)
+    cursor = text.createTextCursorByRange(text.getEnd())
+    text.insertControlCharacter(cursor, PARAGRAPH_BREAK, False)
+    cursor.insertDocumentFromURL(template_url, ())
+    if body_empty:
+        for para in reversed(original):
+            if _has_anchored_content(para):
+                _collapse_paragraph(para)
+            else:
+                delete_paragraph_at(para)
+    first = text.createTextCursorByRange(text.getStart())
+    if page_style and first.PageStyleName != page_style:
+        first.PageDescName = page_style
 
 
 def create_report(ctx, model, settings, hidden=False):
@@ -200,12 +234,19 @@ def create_report(ctx, model, settings, hidden=False):
         raise IOError(u"Nie znaleziono szablonu raportu: %s" % C.TEMPLATE_FILE)
     desktop = ctx.ServiceManager.createInstanceWithContext(
         "com.sun.star.frame.Desktop", ctx)
-    url = uno.systemPathToFileUrl(C.TEMPLATE_FILE)
+    template_url = uno.systemPathToFileUrl(C.TEMPLATE_FILE)
+    letterhead = letterhead_path(settings)
+    base_url = uno.systemPathToFileUrl(letterhead) if letterhead else template_url
     doc = desktop.loadComponentFromURL(
-        url, "_blank", 0, props(AsTemplate=True, Hidden=hidden))
+        base_url, "_blank", 0, props(AsTemplate=True, Hidden=hidden))
+    if doc is None:
+        raise IOError(u"Nie udało się otworzyć pliku: %s" % (letterhead or C.TEMPLATE_FILE))
     doc.lockControllers()
     try:
+        if letterhead:
+            insert_report_body(doc, template_url)
         fill_report(ctx, doc, model, settings)
+        _remove_end_marker(doc)
     finally:
         doc.unlockControllers()
     doc.setModified(True)

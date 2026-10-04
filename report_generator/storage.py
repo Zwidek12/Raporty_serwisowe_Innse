@@ -2,6 +2,7 @@ import io
 import json
 import os
 import re
+import shutil
 import tempfile
 
 from . import constants as C
@@ -67,6 +68,39 @@ def save_settings(user_dir, settings):
 def effective_output_dir(settings):
     path = (settings.get("output_dir") or u"").strip()
     return path or default_output_dir()
+
+
+def is_letterhead_file(path):
+    return os.path.splitext(path or u"")[1].lower() in C.LETTERHEAD_EXTENSIONS
+
+
+def install_letterhead(user_dir, source):
+    source = (source or u"").strip()
+    if not source:
+        return u""
+    if not os.path.isfile(source):
+        raise IOError(u"Nie znaleziono pliku papieru firmowego:\n%s" % source)
+    if not is_letterhead_file(source):
+        raise ValueError(u"Nieobsługiwany format papieru firmowego. Dozwolone: %s"
+                         % u", ".join(C.LETTERHEAD_EXTENSIONS))
+    ext = os.path.splitext(source)[1].lower()
+    target = os.path.join(user_dir, C.LETTERHEAD_BASENAME + ext)
+    if os.path.normcase(os.path.abspath(source)) == os.path.normcase(
+            os.path.abspath(target)):
+        return target
+    for old_ext in C.LETTERHEAD_EXTENSIONS:
+        old = os.path.join(user_dir, C.LETTERHEAD_BASENAME + old_ext)
+        if os.path.exists(old):
+            os.remove(old)
+    shutil.copyfile(source, target)
+    return target
+
+
+def remove_letterhead(user_dir):
+    for ext in C.LETTERHEAD_EXTENSIONS:
+        old = os.path.join(user_dir, C.LETTERHEAD_BASENAME + ext)
+        if os.path.exists(old):
+            os.remove(old)
 
 
 def load_custom_phrases(user_dir):

@@ -3,6 +3,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from tools.lo_session import Session
+from tools.make_test_letterhead import build as build_letterhead
 from report_generator import constants as C
 from report_generator import document, export_pdf, report_model
 from report_generator.validators import validate
@@ -87,6 +88,13 @@ def doc_text(doc):
     return paras
 
 
+def paras_weight(value, paras):
+    for _, t, p in paras:
+        if t == value:
+            return p.CharWeight
+    return None
+
+
 def check(name, doc, model):
     problems = []
     paras = doc_text(doc)
@@ -97,6 +105,8 @@ def check(name, doc, model):
     for style, t, _ in paras:
         if style == C.STYLE_SECTION and not t.strip():
             problems.append("pusty nagłówek sekcji")
+        if style == C.STYLE_SECTION and paras_weight(t, paras) != BOLD:
+            problems.append("nagłówek bez pogrubienia: " + t)
     expected = [s["heading"] for s in model["sections"].values() if s]
     if model["final"]:
         expected.append(model["final"]["heading"])
@@ -125,42 +135,78 @@ def check(name, doc, model):
     return problems, full
 
 
+def check_letterhead(doc):
+    problems = []
+    page = doc.getStyleFamilies().getByName("PageStyles").getByName(
+        doc.getText().createTextCursor().PageStyleName)
+    header = page.HeaderText.getString() if page.HeaderIsOn else u""
+    footer = page.FooterText.getString() if page.FooterIsOn else u""
+    if u"PRZYKŁADOWA FIRMA SERWISOWA" not in header:
+        problems.append("brak nagłówka papieru firmowego")
+    if u"NIP 000-000-00-00" not in footer:
+        problems.append("brak stopki papieru firmowego")
+    if doc.getDrawPage().getCount() < 2:
+        problems.append("zniknęła grafika papieru (pasek boczny lub znak)")
+    first = None
+    enum = doc.getText().createEnumeration()
+    while enum.hasMoreElements():
+        first = enum.nextElement()
+        if first.getString().strip():
+            break
+    if first.ParaStyleName != C.STYLE_TITLE:
+        problems.append("raport nie zaczyna się od tytułu (styl: %s)"
+                        % first.ParaStyleName)
+    last = None
+    enum = doc.getText().createEnumeration()
+    while enum.hasMoreElements():
+        last = enum.nextElement()
+    if not last.getString().strip():
+        problems.append("puste akapity na końcu dokumentu")
+    return problems
+
+
 def main():
     out_dir = sys.argv[1] if len(sys.argv) > 1 else os.path.join(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "out")
     if not os.path.isdir(out_dir):
         os.makedirs(out_dir)
-    settings = dict(C.DEFAULT_SETTINGS)
-    settings["service_name"] = u"Centrum Serwisowe INNSE"
     failures = 0
     with Session() as session:
-        for name, data in EXAMPLES.items():
-            form = dict(BASE)
-            form.update(data)
-            errors, warnings = validate(form)
-            model = report_model.build_report(form)
-            doc = document.create_report(session.ctx, model, settings, hidden=True)
-            try:
-                problems, full = check(name, doc, model)
-                pages = doc.getCurrentController().getPropertyValue("PageCount")
-                paths = export_pdf.save_and_export(
-                    doc, out_dir, model["ticket"] + "_" + name, settings,
-                    lambda existing: export_pdf.OVERWRITE)
-            finally:
-                doc.close(True)
-            status = "OK" if not problems and not errors else "BŁĄD"
-            failures += status != "OK"
-            print("=" * 70)
-            print("%s: %s  stron=%s  pliki=%s" % (name, status, pages,
-                                                 sorted(paths.values())))
-            for e in errors:
-                print("  błąd walidacji:", e)
-            for w in warnings:
-                print("  ostrzeżenie:", w)
-            for p in problems:
-                print("  PROBLEM:", p)
-            if name != "dlugi":
-                print(full)
+        letterheads = build_letterhead(session.ctx, session.desktop, out_dir)
+        variants = [("czysty", u"")] + [
+            ("papier" + os.path.splitext(p)[1].replace(".", "_"), p)
+            for p in letterheads]
+        for variant, letterhead in variants:
+            settings = dict(C.DEFAULT_SETTINGS)
+            settings["letterhead_path"] = letterhead
+            for name, data in EXAMPLES.items():
+                form = dict(BASE)
+                form.update(data)
+                errors, warnings = validate(form)
+                model = report_model.build_report(form)
+                doc = document.create_report(session.ctx, model, settings,
+                                             hidden=True)
+                try:
+                    problems, full = check(name, doc, model)
+                    pages = doc.getCurrentController().getPropertyValue(
+                        "PageCount")
+                    if letterhead:
+                        problems += check_letterhead(doc)
+                    paths = export_pdf.save_and_export(
+                        doc, out_dir,
+                        "%s_%s_%s" % (model["ticket"], name, variant),
+                        settings, lambda existing: export_pdf.OVERWRITE)
+                finally:
+                    doc.close(True)
+                status = "OK" if not problems and not errors else "BŁĄD"
+                failures += status != "OK"
+                print("%-12s %-16s %-5s stron=%s  %s" % (
+                    variant, name, status, pages,
+                    os.path.basename(paths.get("pdf", u""))))
+                for e in errors:
+                    print("  błąd walidacji:", e)
+                for p in problems:
+                    print("  PROBLEM:", p)
     print("=" * 70)
     print("Wynik: %s" % ("WSZYSTKO OK" if not failures else "%d błędów" % failures))
     return 1 if failures else 0

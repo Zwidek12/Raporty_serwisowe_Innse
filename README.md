@@ -11,7 +11,9 @@ Działa lokalnie i offline. Bez AI, bez chmury, bez zewnętrznych API.
 ![LibreOffice](https://img.shields.io/badge/LibreOffice-7.0%2B-18A303?style=for-the-badge&logo=libreoffice&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-UNO-3776AB?style=for-the-badge&logo=python&logoColor=white)
 
-<img src="docs/img/raport_przyklad.png" alt="Przykładowy raport" width="520">
+<img src="docs/img/raport_przyklad.png" alt="Przykładowy raport na papierze firmowym" width="520">
+
+<sub>Przykład: raport wygenerowany na (testowym) papierze firmowym</sub>
 
 </div>
 
@@ -25,6 +27,8 @@ Działa lokalnie i offline. Bez AI, bez chmury, bez zewnętrznych API.
 2. Pobierz **[ServiceReport.oxt](https://github.com/Zwidek12/Raporty_serwisowe_Innse/releases/latest)** z zakładki *Releases*.
 3. Kliknij plik dwukrotnie. LibreOffice otworzy Menedżer rozszerzeń, a Ty potwierdzasz instalację.
 4. Uruchom ponownie LibreOffice i otwórz **Writer**. Pojawią się menu **Raport serwisowy** i przycisk **Utwórz raport serwisowy**.
+5. Przy pierwszym raporcie program zapyta o **papier firmowy**. Wskaż swój plik (`.ott`, `.odt`, `.docx`, `.doc`), a od tej pory każdy raport będzie na nim tworzony.
+   Można go też ustawić lub zmienić w *Raport serwisowy → Ustawienia*.
 
 <details>
 <summary>Inne sposoby instalacji</summary>
@@ -58,7 +62,8 @@ Szczegóły: [docs/INSTALL.md](docs/INSTALL.md)
 - **Podgląd przed zapisem:** raport otwiera się w Writerze do ręcznej korekty.
 - **Zapis ODT + eksport PDF** (`Raport_<numer>.odt/.pdf`) z obsługą wersji (`_v2`, `_v3`…).
 - **Walidacja:** wymagane pola oraz ostrzeżenia o niespójnościach, np. status „Naprawiony” bez wykonanych czynności.
-- **Ustawienia:** logo, nazwa serwisu, katalog zapisu, domyślny technik, ODT i/lub PDF.
+- **Papier firmowy:** raport powstaje bezpośrednio na Twoim papierze firmowym (`.ott`, `.odt`, `.docx`, `.doc`). Nagłówek, stopka, logo, grafiki i marginesy zostają nietknięte.
+- **Ustawienia:** papier firmowy, katalog zapisu, domyślny technik, ODT i/lub PDF.
 
 ## 🔒 Zasada: zero wymyślonych faktów
 
@@ -92,7 +97,7 @@ Pełna instrukcja: [docs/USER_GUIDE.md](docs/USER_GUIDE.md)
 ```
 report_generator/   logika: parser, walidacja, model raportu, dokument, PDF, okna
 extension/          pliki pakietu .oxt (komponent UNO, menu, pasek narzędzi)
-resources/          szablon .ott, biblioteka fraz (JSON), logo zastępcze
+resources/          szablon treści raportu (.ott), biblioteka fraz (JSON)
 tools/              budowanie szablonu i .oxt, weryfikacja w trybie headless
 tests/              testy jednostkowe
 ```

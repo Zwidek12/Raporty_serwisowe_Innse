@@ -704,39 +704,59 @@ class PhraseLibraryDialog(DialogBase):
         self.execute()
 
 
+def pick_letterhead_file(ctx, current=u""):
+    picker = ctx.ServiceManager.createInstanceWithContext(
+        "com.sun.star.ui.dialogs.FilePicker", ctx)
+    patterns = u";".join(u"*" + e for e in C.LETTERHEAD_EXTENSIONS)
+    picker.appendFilter(u"Papier firmowy (Writer / Word)", patterns)
+    picker.appendFilter(u"Wszystkie pliki", u"*.*")
+    folder = os.path.dirname(current) if current else u""
+    if folder and os.path.isdir(folder):
+        picker.setDisplayDirectory(uno.systemPathToFileUrl(folder))
+    if picker.execute() == 1:
+        files = picker.getSelectedFiles()
+        if files:
+            return file_url_to_path(files[0])
+    return u""
+
+
 class SettingsDialog(DialogBase):
-    def __init__(self, ctx, parent, settings):
+    def __init__(self, ctx, parent, settings, user_dir):
         DialogBase.__init__(self, ctx, parent, u"Ustawienia – Raport serwisowy",
-                            320, 238)
+                            320, 232)
         self.settings = dict(settings)
+        self.user_dir = user_dir
         self.result = None
         s = self.settings
-        self.label("lbl_dir", 6, 6, 308, u"Domyślny katalog zapisu raportów:")
-        self.edit("edDir", 6, 15, 250,
+        self.label("lbl_letter", 6, 6, 308,
+                   u"Papier firmowy (.ott, .odt, .docx, .doc):", bold=True)
+        self.edit("edLetter", 6, 15, 194, text=s.get("letterhead_path", u""))
+        self.button("btnLetter", 204, 14, 54, u"Wybierz…", self.pick_letter)
+        self.button("btnLetterClear", 262, 14, 52, u"Usuń", self.clear_letter)
+        self.label("lbl_letter_info", 6, 30, 308,
+                   u"Raport jest tworzony na tym papierze: jego nagłówek, stopka, "
+                   u"logo i marginesy zostają bez zmian. Plik jest kopiowany do "
+                   u"profilu użytkownika.", h=18, MultiLine=True)
+        self.label("lbl_dir", 6, 52, 308, u"Domyślny katalog zapisu raportów:")
+        self.edit("edDir", 6, 61, 250,
                   text=s.get("output_dir") or storage.default_output_dir())
-        self.button("btnDir", 260, 14, 54, u"Wybierz…", self.pick_dir)
-        self.label("lbl_service", 6, 33, 308, u"Nazwa serwisu (nagłówek raportu):")
-        self.edit("edService", 6, 42, 308, text=s.get("service_name", u""))
-        self.label("lbl_logo", 6, 60, 308,
-                   u"Logo (PNG/JPG/SVG; puste = logo zastępcze z szablonu):")
-        self.edit("edLogo", 6, 69, 250, text=s.get("logo_path", u""))
-        self.button("btnLogo", 260, 68, 54, u"Wybierz…", self.pick_logo)
-        self.label("lbl_tech", 6, 87, 308, u"Domyślny serwis / technik:")
-        self.edit("edTech", 6, 96, 308, text=s.get("default_technician", u""))
-        self.label("lbl_type", 6, 114, 308, u"Domyślny rodzaj raportu:")
-        self.listbox("lbType", 6, 123, 150, 12, C.REPORT_TYPES)
-        self.checkbox("cbOpen", 6, 143, 308,
+        self.button("btnDir", 260, 60, 54, u"Wybierz…", self.pick_dir)
+        self.label("lbl_tech", 6, 79, 308, u"Domyślny serwis / technik:")
+        self.edit("edTech", 6, 88, 308, text=s.get("default_technician", u""))
+        self.label("lbl_type", 6, 106, 308, u"Domyślny rodzaj raportu:")
+        self.listbox("lbType", 6, 115, 150, 12, C.REPORT_TYPES)
+        self.checkbox("cbOpen", 6, 135, 308,
                       u"Otwórz folder po eksporcie",
                       s.get("open_folder_after_export", True))
-        self.checkbox("cbOdt", 6, 157, 308, u"Zapisuj kopię ODT",
+        self.checkbox("cbOdt", 6, 149, 308, u"Zapisuj kopię ODT",
                       s.get("save_odt", True))
-        self.checkbox("cbPdf", 6, 171, 308, u"Generuj PDF",
+        self.checkbox("cbPdf", 6, 163, 308, u"Generuj PDF",
                       s.get("export_pdf", True))
-        self.label("lbl_note", 6, 186, 308,
+        self.label("lbl_note", 6, 180, 308,
                    u"Ustawienia są zapisywane lokalnie w profilu użytkownika "
                    u"LibreOffice.", h=18, MultiLine=True)
-        self.button("btnOk", 170, 218, 70, u"Zapisz", self.save)
-        self.button("btnCancel", 244, 218, 70, u"Anuluj", self.close)
+        self.button("btnOk", 170, 212, 70, u"Zapisz", self.save)
+        self.button("btnCancel", 244, 212, 70, u"Anuluj", self.close)
 
     def after_peer(self):
         self.select_item("lbType", self.settings.get("default_report_type",
@@ -751,31 +771,38 @@ class SettingsDialog(DialogBase):
         if picker.execute() == 1:
             self.set_text("edDir", file_url_to_path(picker.getDirectory()))
 
-    def pick_logo(self):
-        picker = self.smgr.createInstanceWithContext(
-            "com.sun.star.ui.dialogs.FilePicker", self.ctx)
-        picker.appendFilter(u"Obrazy", u"*.png;*.jpg;*.jpeg;*.svg;*.bmp;*.gif")
-        picker.appendFilter(u"Wszystkie pliki", u"*.*")
-        if picker.execute() == 1:
-            files = picker.getSelectedFiles()
-            if files:
-                self.set_text("edLogo", file_url_to_path(files[0]))
+    def pick_letter(self):
+        path = pick_letterhead_file(self.ctx, self.get_text("edLetter").strip())
+        if path:
+            self.set_text("edLetter", path)
+
+    def clear_letter(self):
+        self.set_text("edLetter", u"")
 
     def save(self):
-        logo = self.get_text("edLogo").strip()
-        if logo and not os.path.isfile(logo):
-            self.info(u"Nie znaleziono pliku logo:\n" + logo, "warning")
+        letter = self.get_text("edLetter").strip()
+        if letter and not os.path.isfile(letter):
+            self.info(u"Nie znaleziono pliku papieru firmowego:\n" + letter,
+                      "warning")
+            return
+        if letter and not storage.is_letterhead_file(letter):
+            self.info(u"Nieobsługiwany format papieru firmowego. Dozwolone: "
+                      + u", ".join(C.LETTERHEAD_EXTENSIONS), "warning")
             return
         if not self.get_checked("cbOdt") and not self.get_checked("cbPdf"):
             self.info(u"Zaznacz co najmniej jedną opcję: zapis ODT lub PDF.",
                       "warning")
             return
+        if letter:
+            letter = storage.install_letterhead(self.user_dir, letter)
+        else:
+            storage.remove_letterhead(self.user_dir)
         out_dir = self.get_text("edDir").strip()
         self.settings.update({
+            "letterhead_path": letter,
+            "letterhead_asked": True,
             "output_dir": u"" if out_dir == storage.default_output_dir()
             else out_dir,
-            "service_name": self.get_text("edService").strip(),
-            "logo_path": logo,
             "default_technician": self.get_text("edTech").strip(),
             "default_report_type": self.selected_item("lbType") or C.RT_REPAIR,
             "open_folder_after_export": self.get_checked("cbOpen"),

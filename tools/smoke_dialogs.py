@@ -81,7 +81,7 @@ def main():
             assert u"Wyświetlacz: Obraz jest wyświetlany" in text
             assert u"Status własny." in text
 
-            for cls, args in ((dialog.SettingsDialog, (settings,)),
+            for cls, args in ((dialog.SettingsDialog, (settings, user_dir)),
                               (dialog.PhraseLibraryDialog, (user_dir,)),
                               (dialog.CustomPhraseDialog, ()),
                               (dialog.ConflictDialog, (["C:\\x\\Raport_1.pdf"],)),

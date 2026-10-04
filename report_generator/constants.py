@@ -22,12 +22,13 @@ RESOURCES_DIR = os.path.join(ROOT_DIR, "resources")
 DOCS_DIR = os.path.join(ROOT_DIR, "docs")
 TEMPLATE_FILE = os.path.join(RESOURCES_DIR, "report_template.ott")
 PHRASES_DEFAULT_FILE = os.path.join(RESOURCES_DIR, "phrases_default.json")
-LOGO_PLACEHOLDER_FILE = os.path.join(RESOURCES_DIR, "logo_placeholder.png")
 
 USER_DIR_NAME = "service_report"
 SETTINGS_FILE_NAME = "settings.json"
 CUSTOM_PHRASES_FILE_NAME = "custom_phrases.json"
 LOG_FILE_NAME = "service_report.log"
+LETTERHEAD_BASENAME = "papier_firmowy"
+LETTERHEAD_EXTENSIONS = (".ott", ".odt", ".dotx", ".docx", ".dot", ".doc", ".rtf")
 
 RT_REPAIR = "Naprawa"
 RT_DIAGNOSTICS = "Diagnostyka"
@@ -204,9 +205,8 @@ BM_SECTION_DIAGNOSIS = "SECTION_DIAGNOSIS"
 BM_SECTION_WORK = "SECTION_WORK"
 BM_SECTION_TESTS = "SECTION_TESTS"
 BM_FINAL_STATUS = "FINAL_STATUS"
-BM_SERVICE_NAME = "SERVICE_NAME"
 BM_FOOTER_TICKET = "FOOTER_TICKET"
-LOGO_OBJECT_NAME = "LOGO"
+BM_REPORT_END = "REPORT_END"
 
 SECTION_BOOKMARKS = {
     FIELD_CUSTOMER: BM_SECTION_CUSTOMER,
@@ -232,8 +232,8 @@ DOCPROP_MARKER = "RaportSerwisowy"
 
 DEFAULT_SETTINGS = {
     "output_dir": "",
-    "service_name": "Centrum Serwisowe",
-    "logo_path": "",
+    "letterhead_path": "",
+    "letterhead_asked": False,
     "default_technician": "",
     "default_report_type": RT_REPAIR,
     "open_folder_after_export": True,

@@ -82,11 +82,11 @@ class JsonStorageTest(unittest.TestCase):
     def test_settings_roundtrip_and_defaults(self):
         settings = storage.load_settings(self.dir)
         self.assertTrue(settings["export_pdf"])
-        settings["service_name"] = u"Serwis Łódź"
+        settings["default_technician"] = u"Serwis Łódź"
         settings["save_odt"] = False
         storage.save_settings(self.dir, settings)
         loaded = storage.load_settings(self.dir)
-        self.assertEqual(loaded["service_name"], u"Serwis Łódź")
+        self.assertEqual(loaded["default_technician"], u"Serwis Łódź")
         self.assertFalse(loaded["save_odt"])
 
     def test_invalid_settings_file_falls_back(self):
@@ -105,6 +105,45 @@ class JsonStorageTest(unittest.TestCase):
         self.assertEqual(len(loaded), 2)
         loaded = storage.remove_custom_phrase(loaded, loaded[0]["id"])
         self.assertEqual([p["title"] for p in loaded], [u"Inna"])
+
+    def test_old_settings_keys_are_ignored(self):
+        storage.write_json(os.path.join(self.dir, "settings.json"),
+                           {"logo_path": u"C:/logo.png", "service_name": u"X"})
+        loaded = storage.load_settings(self.dir)
+        self.assertNotIn("logo_path", loaded)
+        self.assertEqual(loaded["letterhead_path"], u"")
+
+    def test_install_letterhead_copies_file(self):
+        source = os.path.join(self.dir, "Papier Firmowy ąę.docx")
+        with open(source, "wb") as fh:
+            fh.write(b"abc")
+        target = storage.install_letterhead(self.dir, source)
+        self.assertEqual(os.path.basename(target), "papier_firmowy.docx")
+        with open(target, "rb") as fh:
+            self.assertEqual(fh.read(), b"abc")
+        os.remove(source)
+        self.assertTrue(os.path.isfile(target))
+        self.assertEqual(storage.install_letterhead(self.dir, target), target)
+
+    def test_install_letterhead_replaces_previous_format(self):
+        for name in ("a.odt", "b.ott"):
+            with open(os.path.join(self.dir, name), "wb") as fh:
+                fh.write(b"x")
+        storage.install_letterhead(self.dir, os.path.join(self.dir, "a.odt"))
+        storage.install_letterhead(self.dir, os.path.join(self.dir, "b.ott"))
+        files = sorted(f for f in os.listdir(self.dir) if f.startswith("papier_"))
+        self.assertEqual(files, ["papier_firmowy.ott"])
+        storage.remove_letterhead(self.dir)
+        self.assertFalse(any(f.startswith("papier_") for f in os.listdir(self.dir)))
+
+    def test_install_letterhead_rejects_bad_input(self):
+        with self.assertRaises(IOError):
+            storage.install_letterhead(self.dir, os.path.join(self.dir, "brak.odt"))
+        bad = os.path.join(self.dir, "papier.pdf")
+        open(bad, "w").close()
+        with self.assertRaises(ValueError):
+            storage.install_letterhead(self.dir, bad)
+        self.assertEqual(storage.install_letterhead(self.dir, u"  "), u"")
 
     def test_custom_phrase_requires_text(self):
         with self.assertRaises(ValueError):

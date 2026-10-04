@@ -9,8 +9,7 @@ EXT_DIR = os.path.join(ROOT, "extension")
 DIST_DIR = os.path.join(ROOT, "dist")
 OXT_NAME = "ServiceReport.oxt"
 
-REQUIRED_RESOURCES = ("report_template.ott", "phrases_default.json",
-                      "logo_placeholder.png")
+REQUIRED_RESOURCES = ("report_template.ott", "phrases_default.json")
 
 
 def version():

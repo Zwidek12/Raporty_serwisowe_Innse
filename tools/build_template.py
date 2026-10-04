@@ -2,7 +2,6 @@ import os
 import sys
 
 import uno
-from com.sun.star.awt import Size
 from com.sun.star.awt.FontSlant import ITALIC
 from com.sun.star.awt.FontWeight import BOLD, NORMAL
 from com.sun.star.beans import PropertyValue
@@ -50,7 +49,7 @@ def setup_page(doc):
     set_props(page, Width=PAGE_W, Height=PAGE_H,
               LeftMargin=MARGIN_LR, RightMargin=MARGIN_LR,
               TopMargin=MARGIN_TB, BottomMargin=1200,
-              HeaderIsOn=True, FooterIsOn=True,
+              HeaderIsOn=False, FooterIsOn=True,
               HeaderBodyDistance=600, FooterBodyDistance=400,
               HeaderIsDynamicHeight=True, FooterIsDynamicHeight=True)
     return page
@@ -105,7 +104,18 @@ def para_style(doc, name, parent="Standard", **kwargs):
         styles.insertByName(name, style)
     style.ParentStyle = parent
     style.FollowStyle = name
-    set_props(style, **kwargs)
+    spacing = uno.createUnoStruct("com.sun.star.style.LineSpacing")
+    spacing.Mode = 0
+    spacing.Height = 100
+    defaults = dict(CharHeight=10.5, CharColor=COLOR_TEXT, ParaTopMargin=0,
+                    ParaBottomMargin=0, ParaLeftMargin=0, ParaRightMargin=0,
+                    ParaFirstLineIndent=0, ParaLineSpacing=spacing,
+                    ParaAdjust=LEFT, ParaOrphans=2, ParaWidows=2)
+    if kwargs.get("NumberingStyleName"):
+        for key in ("ParaLeftMargin", "ParaFirstLineIndent"):
+            defaults.pop(key)
+    defaults.update(kwargs)
+    set_props(style, **defaults)
     return style
 
 
@@ -144,11 +154,12 @@ def setup_styles(doc):
     status.LeftBorder = line(COLOR_ACCENT, 70)
 
 
-def run(text, cur, value, bold=False, bookmark=None, doc=None):
+def run(text, cur, value, bold=False, bookmark=None, doc=None, weight=True):
     text.insertString(cur, value, False)
     sel = text.createTextCursorByRange(cur.getEnd())
     sel.goLeft(len(value.encode("utf-16-le")) // 2, True)
-    sel.CharWeight = BOLD if bold else NORMAL
+    if weight:
+        sel.CharWeight = BOLD if bold else NORMAL
     if bookmark:
         mark = doc.createInstance("com.sun.star.text.Bookmark")
         mark.setName(bookmark)
@@ -200,41 +211,12 @@ def build_body(doc):
     for bm in (C.BM_SECTION_CUSTOMER, C.BM_SECTION_DIAGNOSIS, C.BM_SECTION_WORK,
                C.BM_SECTION_TESTS, C.BM_FINAL_STATUS):
         new_par(text, cur, C.STYLE_BODY)
-        run(text, cur, placeholder(bm), False, bm, doc)
+        run(text, cur, placeholder(bm), False, bm, doc, weight=False)
 
-
-def build_header(ctx, doc, page):
-    text = page.HeaderText
-    cur = text.createTextCursor()
-    tab = uno.createUnoStruct("com.sun.star.style.TabStop")
-    tab.Position = TEXT_W
-    tab.Alignment = uno.Enum("com.sun.star.style.TabAlign", "RIGHT")
-    cur.ParaTabStops = (tab,)
-    cur.ParaBottomMargin = 0
-    cur.BottomBorder = line(COLOR_ACCENT, 26)
-    cur.BottomBorderDistance = 120
-
-    provider = ctx.ServiceManager.createInstanceWithContext(
-        "com.sun.star.graphic.GraphicProvider", ctx)
-    graphic = provider.queryGraphic(
-        (pv("URL", uno.systemPathToFileUrl(C.LOGO_PLACEHOLDER_FILE)),))
-    logo = doc.createInstance("com.sun.star.text.TextGraphicObject")
-    logo.Graphic = graphic
-    logo.AnchorType = uno.Enum("com.sun.star.text.TextContentAnchorType",
-                               "AS_CHARACTER")
-    logo.VertOrient = 8
-    text.insertTextContent(cur, logo, False)
-    logo.setName(C.LOGO_OBJECT_NAME)
-    logo.Size = Size(3800, 1520)
-
-    text.insertString(cur, u"\t", False)
-    cur.CharHeight = 11.0
-    run(text, cur, placeholder(C.BM_SERVICE_NAME), True, C.BM_SERVICE_NAME, doc)
-    sel = text.createTextCursorByRange(text.getStart())
-    sel.gotoEnd(True)
-    sel.CharFontName = FONT
-    sel.CharColor = COLOR_ACCENT
-    sel.CharHeight = 11.0
+    new_par(text, cur, C.STYLE_BODY)
+    mark = doc.createInstance("com.sun.star.text.Bookmark")
+    mark.setName(C.BM_REPORT_END)
+    text.insertTextContent(cur, mark, False)
 
 
 def build_footer(doc, page):
@@ -268,7 +250,6 @@ def build(ctx, desktop, target):
         setup_styles(doc)
         page = setup_page(doc)
         build_body(doc)
-        build_header(ctx, doc, page)
         build_footer(doc, page)
         info = doc.getDocumentProperties()
         info.Title = u"Szablon raportu serwisowego"

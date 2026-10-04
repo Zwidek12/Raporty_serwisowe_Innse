@@ -9,6 +9,7 @@ from . import constants as C
 from . import storage
 from .dialog import (ConflictDialog, InputDialog, MainDialog,
                      PhraseLibraryDialog, SettingsDialog, ask_yes_no,
+                     pick_letterhead_file,
                      message_box)
 from .document import create_report
 from .export_pdf import report_ticket, save_and_export
@@ -56,10 +57,39 @@ def _log(ctx, text):
         pass
 
 
+def _ensure_letterhead(ctx, parent, user_dir, settings):
+    path = (settings.get("letterhead_path") or u"").strip()
+    if path and not os.path.isfile(path):
+        message_box(ctx, parent,
+                    u"Nie znaleziono pliku papieru firmowego:\n%s\n\n"
+                    u"Raport zostanie utworzony na czystej stronie. Wskaż papier "
+                    u"ponownie w menu Raport serwisowy → Ustawienia." % path,
+                    kind="warning")
+        return settings
+    if path or settings.get("letterhead_asked"):
+        return settings
+    settings["letterhead_asked"] = True
+    if ask_yes_no(ctx, parent,
+                  u"Nie ustawiono papieru firmowego.\n\nCzy chcesz teraz wskazać "
+                  u"plik papieru firmowego (.ott, .odt, .docx, .doc)?\n"
+                  u"Raporty będą tworzone bezpośrednio na nim.\n\n"
+                  u"Można to zrobić później w menu Raport serwisowy → Ustawienia."):
+        source = pick_letterhead_file(ctx)
+        if source:
+            try:
+                settings["letterhead_path"] = storage.install_letterhead(
+                    user_dir, source)
+            except (IOError, OSError, ValueError) as exc:
+                message_box(ctx, parent, u"%s" % exc, kind="warning")
+    storage.save_settings(user_dir, settings)
+    return settings
+
+
 def new_report(ctx):
     user_dir = user_data_dir(ctx)
     settings = storage.load_settings(user_dir)
     parent = _parent_window(ctx)
+    settings = _ensure_letterhead(ctx, parent, user_dir, settings)
     draft_path = os.path.join(user_dir, DRAFT_FILE_NAME)
     draft = storage.read_json(draft_path, None)
     if draft and not ask_yes_no(
@@ -165,7 +195,8 @@ def phrase_library(ctx):
 
 def settings_dialog(ctx):
     user_dir = user_data_dir(ctx)
-    dlg = SettingsDialog(ctx, _parent_window(ctx), storage.load_settings(user_dir))
+    dlg = SettingsDialog(ctx, _parent_window(ctx), storage.load_settings(user_dir),
+                         user_dir)
     try:
         result = dlg.run()
     finally:
@@ -186,6 +217,8 @@ HELP_TEXT = u"""RAPORT SERWISOWY – POMOC
    Sprawdź raport i popraw go ręcznie, jeśli trzeba.
 5. Raport serwisowy → Zapisz i eksportuj PDF – zapisuje
    Raport_<numer>.odt oraz Raport_<numer>.pdf.
+6. Papier firmowy (.ott/.odt/.docx/.doc) ustawisz w menu
+   Raport serwisowy → Ustawienia – raporty powstają bezpośrednio na nim.
 
 Program nie dopisuje żadnych faktów: w raporcie są wyłącznie dane
 wpisane lub świadomie wybrane przez operatora.

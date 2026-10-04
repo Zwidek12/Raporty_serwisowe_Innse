@@ -18,9 +18,8 @@ extension/                 pliki pakietu .oxt
     service_report_job.py  komponent UNO (XJobExecutor) wywoływany z menu
     ServiceReport.components, Addons.xcu, description.xml, META-INF/manifest.xml
 resources/
-    report_template.ott    szablon (generowany przez tools/build_template.py)
+    report_template.ott    szablon treści raportu (generowany przez tools/build_template.py)
     phrases_default.json   biblioteka fraz domyślnych
-    logo_placeholder.png   logo zastępcze (tools/make_logo_placeholder.py)
 tools/                     budowanie i weryfikacja (headless)
 tests/                     testy jednostkowe (unittest, bez UNO)
 ```
@@ -35,8 +34,8 @@ numeracja, tytuły, statusy) są testowane jednostkowo.
    co prowadzi do `ServiceReportJob.trigger("new")`, a ten do `main.dispatch`.
 2. `MainDialog` zbiera dane, a `validators.validate` zwraca błędy i ostrzeżenia.
 3. `report_model.build_report` buduje model (tylko dane operatora + stałe z `constants.py`).
-4. `document.create_report` otwiera szablon jako nowy dokument (`AsTemplate`),
-   wypełnia zakładki i pokazuje dokument. Nie zapisuje go.
+4. `document.create_report` otwiera papier firmowy albo szablon jako nowy dokument
+   (`AsTemplate`), wypełnia zakładki i pokazuje dokument. Nie zapisuje go.
 5. `main.export_current` (polecenie `export`) czyta numer zgłoszenia z właściwości
    dokumentu `RaportSerwisowy_Zgloszenie`, a `export_pdf.save_and_export`
    zapisuje ODT (`storeAsURL`) i PDF (`storeToURL`, filtr `writer_pdf_Export`).
@@ -53,9 +52,35 @@ Generator nie wyszukuje tekstu. Korzysta wyłącznie z zakładek (bookmarks):
 | `DEVICE_MANUFACTURER`, `DEVICE_MODEL` | wiersz „Producent / Model” |
 | `DEVICE_SERIAL`, `DEVICE_TYPE`, `DEVICE_STATUS` | opcjonalne punkty danych urządzenia |
 | `SECTION_CUSTOMER`, `SECTION_DIAGNOSIS`, `SECTION_WORK`, `SECTION_TESTS`, `FINAL_STATUS` | akapit zastępowany nagłówkiem, wstępem i punktami (pusta sekcja → akapit usuwany) |
-| `SERVICE_NAME` (nagłówek strony), `FOOTER_TICKET` (stopka) | nazwa serwisu, numer zgłoszenia |
+| `FOOTER_TICKET` (stopka, tylko bez papieru firmowego) | numer zgłoszenia |
+| `REPORT_END` | pusty akapit kończący treść szablonu (usuwany po wypełnieniu) |
 
-Obraz logo w nagłówku ma nazwę obiektu `LOGO`.
+### Papier firmowy
+
+Gdy w ustawieniach wskazano papier firmowy (`letterhead_path`), `document.create_report`:
+
+1. otwiera papier jako nowy dokument (`AsTemplate`), więc nagłówek, stopka, grafiki
+   i style strony pochodzą z papieru,
+2. dopisuje nowy akapit na końcu treści i wstawia w niego `report_template.ott`
+   (`insertDocumentFromURL`), a style `RG …` są kopiowane razem z treścią,
+3. jeśli treść papieru była pusta:
+   - usuwa puste akapity papieru,
+   - akapity z zakotwiczonymi grafikami zostawia, ale zmniejsza do niewidocznej
+     wysokości. W plikach `.docx` grafiki są zawsze kotwiczone do akapitu, więc
+     usunięcie akapitu usunęłoby grafikę.
+4. przywraca styl strony pierwszego akapitu,
+5. wypełnia zakładki tak samo jak bez papieru i usuwa akapit `REPORT_END`, który
+   przejmuje formatowanie papieru w miejscu łączenia.
+
+Style `RG …` mają jawnie ustawione rozmiary, odstępy i interlinię, a krój czcionki
+dziedziczą ze stylu „Domyślny” papieru. Dzięki temu raport pasuje do czcionki
+firmowej, a układ się nie zmienia. Szablon nie może mieć ręcznego formatowania
+znaków w akapitach sekcji, bo przy wstawianiu stałoby się formatowaniem całego
+akapitu (sprawdza to `verify_generation.py`).
+
+`tools/make_test_letterhead.py` tworzy testowy papier (`.odt` i `.docx`), a
+`tools/verify_generation.py` generuje każdy przykład w trzech wariantach: czysta
+strona, papier `.odt` i papier `.docx`.
 
 Style akapitów: `RG Tytuł`, `RG Dane`, `RG Dane nagłówek`, `RG Dane punkt`,
 `RG Sekcja` (zachowaj z następnym, bez dzielenia), `RG Wstęp` (zachowaj z
@@ -94,10 +119,9 @@ Skrypty korzystające z UNO uruchamiaj Pythonem LibreOffice:
 
 ```
 set LOPY="C:\Program Files\LibreOffice\program\python.exe"
-%LOPY% tools\make_logo_placeholder.py     # logo zastępcze
 %LOPY% tools\build_template.py            # resources\report_template.ott (headless)
 %LOPY% -m unittest discover -s tests      # testy jednostkowe
-%LOPY% tools\verify_generation.py         # generuje przykładowe raporty ODT+PDF do out\
+%LOPY% tools\verify_generation.py         # przykładowe raporty ODT+PDF (czysto / papier .odt / .docx) do out\
 %LOPY% tools\smoke_dialogs.py             # tworzy wszystkie okna i symuluje formularz
 %LOPY% tools\build_oxt.py                 # dist\ServiceReport.oxt
 ```
@@ -108,10 +132,12 @@ Testy jednostkowe działają też zwykłym Pythonem 3 (`python -m unittest disco
 
 Automatycznie, w LibreOffice 26.8 headless na Windows 11:
 - parser, walidacja, nazwy plików, wersjonowanie, mapa statusów, model raportu
-  i biblioteka fraz (64 testy jednostkowe),
-- generowanie raportów z przykładów 43–46 i długiego, 4-stronicowego raportu,
-  zapis ODT i eksport PDF, pogrubienie wyłącznie etykiet, brak pustych
-  nagłówków, polskie znaki w PDF,
+  biblioteka fraz i kopiowanie papieru firmowego (68 testów jednostkowych),
+- generowanie raportów z przykładów 43–46 i długiego, wielostronicowego raportu
+  na czystej stronie oraz na papierze firmowym `.odt` i `.docx`: zapis ODT
+  i eksport PDF, pogrubienie wyłącznie etykiet, pogrubione nagłówki sekcji,
+  brak pustych nagłówków, zachowany nagłówek, stopka i grafiki papieru,
+  polskie znaki w PDF,
 - tworzenie wszystkich okien dialogowych i symulacja pracy z formularzem
   (wybór typu urządzenia, wstawianie fraz, frazy własne, status własny,
   odtworzenie formularza),

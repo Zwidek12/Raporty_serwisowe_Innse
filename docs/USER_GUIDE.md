@@ -71,6 +71,25 @@ pojawić tylko wtedy, gdy wpiszesz go ręcznie na podstawie raportu technika.
 Po zapisie dokument jest powiązany z plikiem ODT. Kolejne poprawki zapisujesz
 zwykłym Ctrl+S, a PDF odświeżasz ponownym kliknięciem „Zapisz i eksportuj PDF”.
 
+## Papier firmowy
+
+Raport może być tworzony bezpośrednio na papierze firmowym.
+
+1. Przygotuj papier firmowy jako plik Writer lub Word: `.ott`, `.odt`, `.docx`, `.doc`, `.dotx` lub `.rtf`.
+   Logo, adres, NIP itp. powinny być w **nagłówku i stopce** albo jako grafiki. Treść strony zostaw pustą.
+2. Wskaż plik przy pierwszym raporcie (program o to zapyta) albo w *Raport serwisowy → Ustawienia → Papier firmowy*.
+3. Program kopiuje plik do profilu użytkownika, więc późniejsze przeniesienie lub usunięcie oryginału nie psuje raportów.
+   Po zmianie papieru wskaż nowy plik w Ustawieniach. Przycisk **Usuń** wyłącza papier.
+
+Jak to działa:
+- nagłówek, stopka, logo, grafiki, marginesy i rozmiar strony pochodzą z papieru i nie są zmieniane,
+- treść raportu (tytuł, dane, sekcje) jest wstawiana w miejsce pustej treści papieru,
+- raport przejmuje krój czcionki z papieru, a układ (rozmiary, odstępy, punktory) jest zawsze taki sam,
+- przy długim raporcie papier jest na każdej stronie, tak jak w zwykłym dokumencie,
+- jeśli w treści papieru jest jakiś tekst, raport zostanie dopisany pod nim.
+
+Bez papieru firmowego raport powstaje na czystej stronie A4 ze stopką z numerem zgłoszenia i numeracją stron.
+
 ## Własne frazy
 
 - W formularzu: zaznacz frazę albo wpisz linię w polu i kliknij
@@ -85,8 +104,7 @@ zwykłym Ctrl+S, a PDF odświeżasz ponownym kliknięciem „Zapisz i eksportuj 
 *Raport serwisowy → Ustawienia…*:
 
 - domyślny katalog zapisu,
-- nazwa serwisu (prawy górny róg raportu),
-- logo (PNG/JPG/SVG), które jest automatycznie skalowane do ok. 45 × 18 mm,
+- papier firmowy (zob. niżej),
 - domyślny technik i domyślny rodzaj raportu,
 - otwieranie folderu po eksporcie,
 - zapis ODT i/lub generowanie PDF.
