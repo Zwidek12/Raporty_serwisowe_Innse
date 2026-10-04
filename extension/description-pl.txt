@@ -1,0 +1,9 @@
+Generator raportów serwisowych dla LibreOffice Writer.
+
+Formularz danych urządzenia, biblioteka gotowych sformułowań, generowanie
+raportu z szablonu, podgląd i ręczna edycja, zapis ODT oraz eksport PDF.
+Narzędzie działa lokalnie i nie dopisuje żadnych faktów – w raporcie są
+wyłącznie dane wpisane lub świadomie wybrane przez operatora.
+
+Menu: Raport serwisowy → Nowy raport / Zapisz i eksportuj PDF /
+Biblioteka fraz / Ustawienia / Pomoc.

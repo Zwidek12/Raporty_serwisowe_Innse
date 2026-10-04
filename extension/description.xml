@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<description xmlns="http://openoffice.org/extensions/description/2006"
+             xmlns:d="http://openoffice.org/extensions/description/2006"
+             xmlns:xlink="http://www.w3.org/1999/xlink">
+  <identifier value="com.innse.servicereport"/>
+  <version value="@VERSION@"/>
+  <platform value="all"/>
+  <dependencies>
+    <OpenOffice.org-minimal-version value="4.0" d:name="OpenOffice.org 4.0"/>
+  </dependencies>
+  <display-name>
+    <name lang="pl">Raport serwisowy</name>
+    <name lang="en">Service report generator</name>
+  </display-name>
+  <publisher>
+    <name lang="pl" xlink:href="https://www.libreoffice.org">INNSE</name>
+  </publisher>
+  <extension-description>
+    <src lang="pl" xlink:href="description-pl.txt"/>
+  </extension-description>
+</description>

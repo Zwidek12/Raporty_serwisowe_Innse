@@ -1,0 +1,175 @@
+{
+  "version": 1,
+  "categories": [
+    {
+      "id": "general",
+      "title": "Ogólne",
+      "phrases": [
+        {"id": "general_starts_ok", "title": "Urządzenie uruchamia się prawidłowo", "text": "Urządzenie / Urządzenie uruchamia się prawidłowo i pracuje stabilnie."},
+        {"id": "general_no_start", "title": "Urządzenie nie uruchamia się", "text": "Urządzenie / Urządzenie nie uruchamia się i nie reaguje na próbę włączenia."},
+        {"id": "general_not_confirmed", "title": "Brak potwierdzenia usterki", "text": "Weryfikacja / Podczas przeprowadzonych oględzin i testów zgłaszana nieprawidłowość nie została potwierdzona."},
+        {"id": "general_device_ok", "title": "Sprzęt sprawny", "text": "Stan techniczny / Podczas przeprowadzonych testów urządzenie działało prawidłowo i zgodnie z przeznaczeniem."},
+        {"id": "general_confirmed", "title": "Usterka potwierdzona", "text": "Weryfikacja / Przeprowadzona diagnostyka potwierdziła występowanie zgłaszanej nieprawidłowości."},
+        {"id": "general_partially_confirmed", "title": "Usterka potwierdzona częściowo", "text": "Weryfikacja / Część zgłaszanych objawów została potwierdzona, pozostałe nie wystąpiły podczas przeprowadzonych testów."},
+        {"id": "general_wear", "title": "Zużycie eksploatacyjne", "text": "Stan techniczny / Diagnostyka wykazała zużycie eksploatacyjne wskazanego elementu."},
+        {"id": "general_diag_only", "title": "Wykonano wyłącznie diagnostykę", "text": "Zakres obsługi / W ramach obsługi wykonano wyłącznie czynności diagnostyczne."},
+        {"id": "general_no_repair", "title": "Nie wykonano naprawy", "text": "Zakres obsługi / W ramach niniejszej obsługi nie wykonano naprawy urządzenia."}
+      ]
+    },
+    {
+      "id": "mechanical",
+      "title": "Mechaniczne",
+      "phrases": [
+        {"id": "mech_none", "title": "Brak uszkodzeń mechanicznych", "text": "Stan wizualny / Nie stwierdzono widocznych uszkodzeń mechanicznych obudowy ani elementów zewnętrznych urządzenia."},
+        {"id": "mech_damage", "title": "Stwierdzono uszkodzenie mechaniczne", "text": "Stan wizualny / Stwierdzono uszkodzenie mechaniczne wskazanego elementu urządzenia."},
+        {"id": "mech_crack", "title": "Pęknięcie", "text": "Uszkodzenie mechaniczne / Stwierdzono pęknięcie wskazanego elementu."},
+        {"id": "mech_scratches", "title": "Zarysowania", "text": "Stan wizualny / Na urządzeniu widoczne są zarysowania."},
+        {"id": "mech_cosmetic", "title": "Uszkodzenia kosmetyczne", "text": "Stan wizualny / Stwierdzone ślady mają charakter powierzchniowy i nie wpływają na podstawowe działanie urządzenia."}
+      ]
+    },
+    {
+      "id": "liquid",
+      "title": "Zalanie",
+      "phrases": [
+        {"id": "liquid_none", "title": "Brak śladów zalania", "text": "Wilgoć / Nie stwierdzono widocznych śladów zalania ani zawilgocenia urządzenia."},
+        {"id": "liquid_traces", "title": "Ślady zalania", "text": "Wilgoć / W trakcie oględzin stwierdzono ślady kontaktu urządzenia z cieczą."},
+        {"id": "liquid_corrosion", "title": "Korozja", "text": "Stan wewnętrzny / Stwierdzono ślady korozji wskazanych elementów."}
+      ]
+    },
+    {
+      "id": "power",
+      "title": "Zasilanie",
+      "phrases": [
+        {"id": "power_ok", "title": "Zasilanie prawidłowe", "text": "Zasilanie / Urządzenie prawidłowo reaguje na podłączenie zasilania."},
+        {"id": "power_none", "title": "Brak zasilania", "text": "Zasilanie / Urządzenie nie reaguje na podłączenie zasilania."},
+        {"id": "charging_ok", "title": "Ładowanie prawidłowe", "text": "Ładowanie / Proces ładowania przebiega prawidłowo."},
+        {"id": "charging_none", "title": "Brak ładowania", "text": "Ładowanie / Urządzenie nie rozpoczyna procesu ładowania."},
+        {"id": "port_dirty", "title": "Port ładowania zabrudzony", "text": "Gniazdo ładowania / Stwierdzono zanieczyszczenie gniazda ładowania."},
+        {"id": "port_ok_after_cleaning", "title": "Po czyszczeniu port działa", "text": "Gniazdo ładowania / Po oczyszczeniu gniazda ładowania jego działanie jest prawidłowe."}
+      ]
+    },
+    {
+      "id": "battery",
+      "title": "Bateria",
+      "phrases": [
+        {"id": "battery_wear", "title": "Zużycie baterii", "text": "Akumulator / Wyniki diagnostyki wskazują na zużycie eksploatacyjne akumulatora."},
+        {"id": "battery_capacity", "title": "Obniżona pojemność", "text": "Akumulator / Pomiar wykazał obniżoną pojemność użytkową akumulatora."},
+        {"id": "battery_short_time", "title": "Krótki czas pracy", "text": "Akumulator / Stwierdzono skrócony czas pracy urządzenia na zasilaniu akumulatorowym."},
+        {"id": "battery_replaced", "title": "Wymiana akumulatora", "text": "Akumulator / Wymieniono akumulator."}
+      ]
+    },
+    {
+      "id": "display",
+      "title": "Wyświetlacz",
+      "phrases": [
+        {"id": "display_ok", "title": "Obraz prawidłowy", "text": "Wyświetlacz / Obraz jest wyświetlany prawidłowo i bez widocznych zakłóceń."},
+        {"id": "touch_ok", "title": "Dotyk prawidłowy", "text": "Panel dotykowy / Panel dotykowy reaguje prawidłowo na polecenia użytkownika."},
+        {"id": "touch_fail", "title": "Brak reakcji dotyku", "text": "Panel dotykowy / Stwierdzono brak prawidłowej reakcji panelu dotykowego."},
+        {"id": "display_lines", "title": "Pasy na obrazie", "text": "Wyświetlacz / Podczas pracy występują zakłócenia obrazu w postaci widocznych pasów."},
+        {"id": "backlight_fail", "title": "Podświetlenie niesprawne", "text": "Podświetlenie / Stwierdzono nieprawidłowe działanie układu podświetlenia."},
+        {"id": "panel_ok", "title": "Matryca sprawna", "text": "Matryca / W trakcie testów nie stwierdzono nieprawidłowości działania matrycy."},
+        {"id": "panel_replaced", "title": "Wymiana matrycy", "text": "Matryca / Wymieniono moduł matrycy."}
+      ]
+    },
+    {
+      "id": "audio",
+      "title": "Audio",
+      "phrases": [
+        {"id": "audio_ok", "title": "Dźwięk prawidłowy", "text": "Audio / Dźwięk odtwarzany jest prawidłowo."},
+        {"id": "mic_ok", "title": "Mikrofon prawidłowy", "text": "Mikrofon / Mikrofon działa prawidłowo."},
+        {"id": "mic_dirty", "title": "Mikrofon zabrudzony", "text": "Mikrofon / Stwierdzono zanieczyszczenie obszaru mikrofonu."},
+        {"id": "mic_ok_after_cleaning", "title": "Po czyszczeniu mikrofon działa", "text": "Mikrofon / Po oczyszczeniu element działa prawidłowo."}
+      ]
+    },
+    {
+      "id": "appliances",
+      "title": "AGD",
+      "phrases": [
+        {"id": "filters_clean", "title": "Filtry czyste", "text": "Filtry / Filtry urządzenia są czyste i prawidłowo zamontowane."},
+        {"id": "filters_dirty", "title": "Filtry zabrudzone", "text": "Filtry / Stwierdzono zabrudzenie elementów filtracyjnych."}
+      ]
+    },
+    {
+      "id": "vacuum",
+      "title": "Odkurzacze",
+      "phrases": [
+        {"id": "brushes_worn", "title": "Zużyte szczotki", "text": "Szczotki / Stwierdzono zużycie eksploatacyjne szczotek czyszczących."},
+        {"id": "brush_damaged", "title": "Szczotka uszkodzona", "text": "Szczotka / Stwierdzono uszkodzenie elementu szczotki czyszczącej."},
+        {"id": "suction_ok", "title": "Siła ssania prawidłowa", "text": "Układ ssący / Podczas testów urządzenie uzyskiwało prawidłową siłę ssania."},
+        {"id": "suction_low", "title": "Obniżona siła ssania", "text": "Układ ssący / Podczas testów stwierdzono obniżoną skuteczność pracy układu ssącego."},
+        {"id": "vacuum_filters_clean", "title": "Filtry czyste", "text": "Filtry / Filtry urządzenia są czyste i prawidłowo zamontowane."},
+        {"id": "vacuum_filters_dirty", "title": "Filtry zabrudzone", "text": "Filtry / Stwierdzono zabrudzenie elementów filtracyjnych."}
+      ]
+    },
+    {
+      "id": "software",
+      "title": "Oprogramowanie",
+      "phrases": [
+        {"id": "sw_reset", "title": "Reset urządzenia", "text": "Oprogramowanie / Przywrócono ustawienia urządzenia zgodnie z procedurą serwisową."},
+        {"id": "sw_test", "title": "Test oprogramowania", "text": "Oprogramowanie / Podczas testów nie stwierdzono nieprawidłowości mających wpływ na podstawowe funkcjonowanie urządzenia."},
+        {"id": "sw_verified", "title": "Weryfikacja oprogramowania", "text": "Oprogramowanie / W trakcie testów zweryfikowano działanie urządzenia również od strony oprogramowania."}
+      ]
+    },
+    {
+      "id": "repair",
+      "title": "Naprawa",
+      "phrases": [
+        {"id": "repair_part_replaced", "title": "Wymieniono podzespół", "text": "Naprawa / Wymieniono wskazany podzespół na sprawny element."},
+        {"id": "repair_connection", "title": "Naprawiono połączenie", "text": "Naprawa / Przywrócono prawidłowe połączenie wskazanego elementu."},
+        {"id": "repair_psu", "title": "Wymieniono płytę zasilającą", "text": "Blok zasilacza / Wymieniono płytę zasilającą."},
+        {"id": "repair_backlight", "title": "Wymieniono podświetlenie LED", "text": "Podświetlenie / Wymieniono zespół listew podświetlenia LED."},
+        {"id": "repair_part_number", "title": "Część z numerem (do uzupełnienia)", "text": "Część / Wymieniono element [nazwa], nr części: [numer]."},
+        {"id": "repair_no_parts", "title": "Części nie wymieniono", "text": "Części / W ramach niniejszej obsługi nie wymieniono żadnych części."}
+      ]
+    },
+    {
+      "id": "cleaning",
+      "title": "Czyszczenie",
+      "phrases": [
+        {"id": "cleaning_done", "title": "Wykonano czyszczenie", "text": "Czynności serwisowe / Przeprowadzono czyszczenie wskazanych elementów urządzenia."},
+        {"id": "cleaning_ok_after", "title": "Po czyszczeniu sprawny", "text": "Weryfikacja / Po wykonaniu czynności czyszczących urządzenie działa prawidłowo."},
+        {"id": "maintenance", "title": "Konserwacja", "text": "Czynności serwisowe / Wykonano standardowe czynności konserwacyjne."}
+      ]
+    },
+    {
+      "id": "tests",
+      "title": "Testy",
+      "phrases": [
+        {"id": "test_power", "title": "Test zasilania pozytywny", "text": "Test zasilania / Urządzenie prawidłowo reaguje na włączenie oraz podłączenie zasilania."},
+        {"id": "test_functional", "title": "Test funkcjonalny pozytywny", "text": "Test funkcjonalny / Podstawowe funkcje urządzenia działają prawidłowo."},
+        {"id": "test_image", "title": "Test obrazu", "text": "Test obrazu / Obraz jest wyświetlany prawidłowo i bez zakłóceń."},
+        {"id": "test_audio", "title": "Test dźwięku", "text": "Test audio / Dźwięk działa prawidłowo."},
+        {"id": "test_charging", "title": "Test ładowania", "text": "Test ładowania / Proces ładowania przebiega prawidłowo."},
+        {"id": "test_final_ok", "title": "Test końcowy pozytywny", "text": "Weryfikacja końcowa / Wszystkie przeprowadzone testy zakończyły się wynikiem pozytywnym."},
+        {"id": "test_not_confirmed", "title": "Nie potwierdzono usterki", "text": "Weryfikacja końcowa / Podczas końcowych testów nie potwierdzono występowania zgłaszanej nieprawidłowości."}
+      ]
+    },
+    {
+      "id": "warranty",
+      "title": "Gwarancja",
+      "phrases": [
+        {"id": "warranty_forward", "title": "Przekazanie do gwaranta", "text": "Status / Urządzenie zostało skierowane do dalszej obsługi w ramach właściwej procedury gwarancyjnej."},
+        {"id": "warranty_service", "title": "Obsługa gwarancyjna", "text": "Status / Dalsza obsługa urządzenia pozostaje w ramach procedury gwarancyjnej."}
+      ]
+    },
+    {
+      "id": "tampering",
+      "title": "Ingerencja",
+      "phrases": [
+        {"id": "tamper_traces", "title": "Ślady ingerencji", "text": "Stan urządzenia / Stwierdzono ślady ingerencji w wewnętrzne elementy urządzenia."},
+        {"id": "tamper_unauthorized", "title": "Nieautoryzowana ingerencja", "text": "Stan urządzenia / Stwierdzono ślady ingerencji niezgodnej z fabrycznym stanem urządzenia."}
+      ]
+    }
+  ],
+  "device_profiles": {
+    "Telewizor": ["display", "power", "audio", "software", "repair", "tests"],
+    "Telefon": ["display", "battery", "power", "audio", "liquid", "software", "tests"],
+    "Laptop": ["power", "battery", "display", "software", "mechanical", "liquid", "tests"],
+    "Odkurzacz": ["vacuum", "battery", "power", "cleaning", "tests"],
+    "AGD": ["appliances", "power", "cleaning", "mechanical", "tests"],
+    "Ekspres do kawy": ["appliances", "cleaning", "power", "liquid", "tests"],
+    "Smartwatch": ["battery", "display", "power", "liquid", "tests"],
+    "Konsola": ["power", "software", "mechanical", "audio", "tests"],
+    "Inne": []
+  }
+}
